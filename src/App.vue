@@ -87,8 +87,12 @@
 				this.messages.push(message);
 			},
 			join() {
-				const serverUrl = 'ws://localhost:443';
+				const serverUrl = 'ws://ws-server-production-8f1f.up.railway.app';
+				// const serverUrl = 'ws://ws-server-production.up.railway.app:443';
 				this.connection = new WebSocket(`${serverUrl}?name=${this.name}&room=${this.room}`);
+				this.connection.onerror = event => {
+					console.log(`Failed to reach WebSocket server ${serverUrl}`, event);
+				};
 				this.connection.onmessage = event => {
 					const data = JSON.parse(event.data);
 					console.log(data.action);
