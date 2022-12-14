@@ -87,7 +87,7 @@
 				this.messages.push(message);
 			},
 			join() {
-				const serverUrl = 'wss://ws-server-production-8f1f.up.railway.app';
+				const serverUrl = process.env.VUE_APP_CHAT_SERVER_URL;
 				// const serverUrl = 'ws://ws-server-production.up.railway.app:443';
 				this.connection = new WebSocket(`${serverUrl}?name=${this.name}&room=${this.room}`);
 				this.connection.onerror = event => {
