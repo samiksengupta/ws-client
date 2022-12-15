@@ -1,25 +1,23 @@
 <template>
-    <div>
-        <div>
-            Your Location: {{ user.location.latitude }},{{ user.location.longitude }}
-        </div>
-        <div id="map-div">Trying to mark your location...</div>
+    <div id="map-container">
+        <div id="map-div">{{ locationFetchMessage }}</div>
     </div>
 </template>
 <style>
     @import 'https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.21.3/maps/maps.css';
-    body, html { margin: 0; padding: 0; }
-    #map-div { width: 100vw; height: 100vh; }
+    #map-container { height: 65vh; width: 76vw; }
+    #map-div { width: 100%; height: 100%; }
 </style>
 <script>
 import tt from '@tomtom-international/web-sdk-maps'
 
 export default {
-    props: ['connection', 'participants', 'userId'],
+    props: ['connection', 'participants', 'userId', 'messages'],
     data() {
         return {
             markers: {},
-            map: null
+            map: null,
+            locationFetchMessage: 'Trying to mark your location...'
         }
     },
     computed: {
@@ -36,11 +34,18 @@ export default {
                 }
             }
             return user;
-        }
+        },
+        
     },
     mounted() {
         navigator.geolocation.getCurrentPosition(this.initializeMap, err => {
             console.log(err.message);
+            switch(err.code) {
+                case err.PERMISSION_DENIED: this.locationFetchMessage = 'Please grant permission to see map.'; break;
+                case err.POSITION_UNAVAILABLE: this.locationFetchMessage = 'Could not detect your location.'; break;
+                case err.TIMEOUT: this.locationFetchMessage = 'Took a long time trying to get your spot. I gave up!'; break;
+            }
+            
             /* const dummyLocation = {
                 coords: {
                     latitude: 22.634834,
@@ -57,9 +62,11 @@ export default {
         navigator.geolocation.watchPosition(this.updatePosition);
     },
     updated() {
-        this.updateMarkers();
     },
     methods: {
+        requestPermission() {
+            navigator.permissions.query({ name: 'geolocation' });
+        },
         initializeMap(position) {
             this.map = tt.map({
                 key: process.env.VUE_APP_TOMTOM_API_KEY,
@@ -70,16 +77,8 @@ export default {
                 },
                 zoom: 12
             });
-            // this.users[0].marker = new tt.Marker().setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this.map);
         },
         updatePosition(position) {
-            // this.users[0].latitude = position.coords.latitude;
-            // this.users[0].longitude = position.coords.longitude;
-            // this.users[0].marker.setLngLat([position.coords.longitude, position.coords.latitude]);
-            // this.map.setCenter({
-            //     lng: position.coords.longitude, 
-            //     lat: position.coords.latitude
-            // })
             const clientData = {
                 location: {    
                     latitude:  position.coords.latitude,
@@ -95,10 +94,16 @@ export default {
                 if(participant.uuid in this.markers) {
                     // update location if already created
                     this.markers[participant.uuid].setLngLat([participant.location.longitude, participant.location.latitude]);
+                    if(this.markers[participant.uuid].showPopup) {
+                        this.markers[participant.uuid].setPopup(new tt.Popup({ offset: {bottom: [0, -40]}, closeButton: false, closeOnClick: true, closeOnMove: false }).setHTML(`<em>${participant.name} says:</em><br/><h2>${this.markers[participant.uuid].popupMessage}</h2>`)).togglePopup();
+                        this.markers[participant.uuid].showPopup = false;
+                    }
                 }
                 else {
                     // create marker
                     this.markers[participant.uuid] = new tt.Marker().setLngLat([participant.location.longitude, participant.location.latitude]).addTo(this.map);
+                    this.markers[participant.uuid].setPopup(new tt.Popup({ offset: {bottom: [0, -40]}, closeButton: false, closeOnClick: true, closeOnMove: false }).setHTML(`<em>${participant.name}</em>`)).togglePopup();
+                    this.markers[participant.uuid].showPopup = false;
                 }
             }
 
@@ -109,6 +114,24 @@ export default {
                     this.markers[uuid].remove();
                     delete this.markers[uuid];
                 }
+            }
+        }
+    },
+    watch: {
+        messages: {
+            immediate: true,
+            handler(newValue) {
+                for(const message of newValue) {
+                    if(message.text && this.markers[message.senderId]) {
+                        this.markers[message.senderId].showPopup = true;
+                        this.markers[message.senderId].popupMessage = message.text;
+                    }
+                }
+            }
+        },
+        participants: {
+            handler() {
+                this.updateMarkers();
             }
         }
     }

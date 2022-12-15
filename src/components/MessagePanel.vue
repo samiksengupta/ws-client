@@ -10,34 +10,35 @@
                 </v-col>
             </v-row>
         </v-card-title>
-        <v-card-text class="flex-grow-1 overflow-y-auto" id="container">
-            <v-row>
+        <v-card-title>
+             <v-row>
                 <v-col>
-                    <v-btn color="error" @click="leaveRoom">Leave</v-btn>
+                    <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
                 <v-col class="text-right">    
-                    <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}</v-btn>
+                    <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}&nbsp;<v-icon>{{ showingMap ? 'mdi-comment-multiple-outline' : 'mdi-map' }}</v-icon></v-btn>
                 </v-col>
             </v-row>
-            <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" ></friend-locator>
-            <div v-else v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
-                <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
-                    {{ message.text }}
-                </v-chip> -->
-                <chat-bubble :message="message.text" :sender="message.sender" ></chat-bubble>
+        </v-card-title>
+        <v-card-text class="flex-grow-1 overflow-y-auto">
+            <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" :messages="messages" ></friend-locator>
+            <div v-else id="container">
+                <v-row v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
+                    <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
+                        {{ message.text }}
+                    </v-chip> -->
+                    <chat-bubble :message="message.text" :sender="message.sender" :outgoing="message.outgoing" ></chat-bubble>
+                </v-row>
             </div>
         </v-card-text>
         <v-card-text class="flex-shrink-1">
-            <v-text-field v-model="currentMessage" label="Your message" type="text" no-details outlined append-outer-icon="mdi-send" hide-details @keyup.enter="sendMessage" />
+            <v-toolbar>
+                <v-text-field rounded mx-2 v-model="currentMessage" label="Your message" type="text" no-details outlined hide-details @keyup.enter="sendMessage" />
+                <v-btn fab dark mx-2 color="green" @click="sendMessage" ><v-icon dark>mdi-send</v-icon></v-btn>
+            </v-toolbar>
         </v-card-text>
     </v-card>
 </template>
-<style lang="scss" scoped>
-    /* .chat-bubble {
-        height: auto; 
-        white-space: normal;
-    } */
-</style>
 <script>
 import ChatBubble from './ChatBubble.vue'
 import FriendLocator from './FriendLocator.vue'
@@ -46,16 +47,15 @@ export default {
     props: ['connection', 'userId', 'participants', 'messages', 'name'],
     data() {
         return {
+            element: null,
+            showingMap: false,
             currentMessage: '',
-            showingMap: false
+            newMessageReceived: false
         }
     },
     components: {
         ChatBubble,
 		FriendLocator
-    },
-    updated() {
-        this.scrollToLastMessage();
     },
     computed: {
         otherParticipants() {
@@ -63,6 +63,12 @@ export default {
         },
         allMessages() {
             return this.messages.map(m => ({ outgoing: m.senderId === this.userId, text: m.text, sender: m.sender }));
+        }
+    },
+    updated() {
+        if(this.newMessageReceived) {
+            this.newMessageReceived = false;
+            this.scrollToLastMessage();
         }
     },
     methods: {
@@ -91,6 +97,14 @@ export default {
             if(!this.showingMap) {
                 const el = this.$el.querySelector('#container').lastElementChild;
                 if(el) el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "center", alignToTop: false });
+            }
+        }
+    },
+    watch: {
+        messages: {
+            immediate: true,
+            handler: function() {
+                this.newMessageReceived = true;
             }
         }
     }

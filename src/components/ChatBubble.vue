@@ -1,7 +1,9 @@
 <template>
-    <div class="bubble">
-        <div class="flex"><span class="sender">{{ sender }}</span><span class="time">{{ time }}</span></div>
-        <p>{{ message }}</p>
+    <div>
+        <div :class="`bubble ${bubbleClass}`">
+            <div><em class="sender">{{ sender }} says:</em><span class="time">{{ time }}</span></div>
+            <h2>{{ message }}</h2>
+        </div>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -14,7 +16,6 @@
         position: relative;
         clear: both;
         
-        background: #95c2fd;
         background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0.15, #bee2ff), color-stop(1, #95c2fd));
         background-image: -webkit-linear-gradient(bottom, #bee2ff 15%, #95c2fd 100%);
         background-image: -moz-linear-gradient(bottom, #bee2ff 15%, #95c2fd 100%);
@@ -36,9 +37,22 @@
         text-shadow: 0 1px 1px rgba(255,255,255,0.8);
         word-wrap: break-word;
     }
+
+    .outgoing {
+        background: #a1d2f3;
+    }
+
+    .incoming {
+        background: rgb(150, 252, 181);
+    }
 </style>
 <script>
 export default {
-    props: ['message', 'sender', 'time'],
+    props: ['message', 'sender', 'time', 'outgoing'],
+    computed: {
+        bubbleClass() {
+            return this.outgoing ? 'outgoing' : 'incoming';
+        }
+    }
 }
 </script>

@@ -83,6 +83,8 @@
 		methods: {
 			addMessage(message) {
 				this.messages.push(message);
+				const participant = this.participants.find(p => p.uuid === message.senderId);
+				if(participant) participant.popupMessage = message.text;
 			},
 			join() {
 				const serverUrl = process.env.VUE_APP_CHAT_SERVER_URL;
