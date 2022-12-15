@@ -1,9 +1,6 @@
 <template>
     <div>
-        <div>
-            Your Location: {{ user.location.latitude }},{{ user.location.longitude }}
-        </div>
-        <div id="map-div">Could not detect Location data</div>
+        <div id="map-div" class="text-center">Could not detect Location data</div>
     </div>
 </template>
 <style>
