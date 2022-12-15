@@ -15,9 +15,6 @@
                 <v-col>
                     <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
-                <v-col class="text-center">    
-                    <v-switch v-model="keepAwake" label="Keep Screen Awake"></v-switch>
-                </v-col>
                 <v-col class="text-right">    
                     <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}&nbsp;<v-icon>{{ showingMap ? 'mdi-comment-multiple-outline' : 'mdi-map' }}</v-icon></v-btn>
                 </v-col>
@@ -26,11 +23,13 @@
         <v-card-text class="flex-grow-1 overflow-y-auto">
             <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" :messages="messages" ></friend-locator>
             <div v-else id="container">
-                <v-row v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
-                    <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
-                        {{ message.text }}
-                    </v-chip> -->
-                    <chat-bubble :message="message.text" :sender="message.sender" :outgoing="message.outgoing" ></chat-bubble>
+                <v-row v-for="(message, index) in allMessages" :key="index">
+                    <v-col :class="{ 'd-flex flex-row-reverse': message.outgoing }">
+                        <chat-bubble :message="message.text" :sender="message.sender" :outgoing="message.outgoing" ></chat-bubble>
+                        <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
+                            {{ message.text }}
+                        </v-chip> -->
+                    </v-col>
                 </v-row>
             </div>
         </v-card-text>
@@ -43,7 +42,6 @@
     </v-card>
 </template>
 <script>
-import NoSleep from 'nosleep.js'
 import ChatBubble from './ChatBubble.vue'
 import FriendLocator from './FriendLocator.vue'
 
@@ -54,9 +52,7 @@ export default {
             element: null,
             showingMap: false,
             currentMessage: '',
-            newMessageReceived: false,
-            keepAwake: true,
-            noSleep: null
+            newMessageReceived: false
         }
     },
     components: {
@@ -70,9 +66,6 @@ export default {
         allMessages() {
             return this.messages.map(m => ({ outgoing: m.senderId === this.userId, text: m.text, sender: m.sender }));
         },
-    },
-    created() {
-        this.noSleep = new NoSleep();
     },
     updated() {
         if(this.newMessageReceived) {
@@ -114,12 +107,6 @@ export default {
             immediate: true,
             handler: function() {
                 this.newMessageReceived = true;
-            }
-        },
-        keepAwake: {
-            handler: function(enabled) {
-                if(enabled) this.noSleep.enable();
-                else this.noSleep.disable();
             }
         }
     }
