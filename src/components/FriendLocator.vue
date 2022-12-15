@@ -50,6 +50,10 @@ export default {
             this.users[0].latitude = position.coords.latitude;
             this.users[0].longitude = position.coords.longitude;
             this.users[0].marker.setLngLat([position.coords.longitude, position.coords.latitude]);
+            this.map.setCenter({
+                lng: position.coords.longitude, 
+                lat: position.coords.latitude
+            })
         }
     }
 }
