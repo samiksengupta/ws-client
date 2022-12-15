@@ -5,7 +5,7 @@
 </template>
 <style>
     @import 'https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.21.3/maps/maps.css';
-    #map-container { height: 55vh; width: 85vw; }
+    #map-container { height: 100vh; width: 100vw; }
     #map-div { width: 100%; height: 100%; }
 </style>
 <script>
