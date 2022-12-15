@@ -28,6 +28,13 @@ export default {
     mounted() {
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(this.updatePosition);
+        }
+    },
+    methods: {
+        updatePosition(position) {
+            this.users[0].latitude = position.coords.latitude;
+            this.users[0].longitude = position.coords.longitude;
+
             this.map = tt.map({
                 key: process.env.VUE_APP_TOMTOM_API_KEY,
                 container: 'map-div',
@@ -37,12 +44,6 @@ export default {
                 },
                 zoom: 12
             });
-        }
-    },
-    methods: {
-        updatePosition(position) {
-            this.users[0].latitude = position.coords.latitude;
-            this.users[0].longitude = position.coords.longitude;
         }
     }
 }
