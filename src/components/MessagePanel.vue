@@ -15,6 +15,9 @@
                 <v-col>
                     <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
+                <v-col class="text-center">    
+                    <v-switch v-model="keepAwake" label="Keep Screen Awake"></v-switch>
+                </v-col>
                 <v-col class="text-right">    
                     <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}&nbsp;<v-icon>{{ showingMap ? 'mdi-comment-multiple-outline' : 'mdi-map' }}</v-icon></v-btn>
                 </v-col>
@@ -40,6 +43,7 @@
     </v-card>
 </template>
 <script>
+import NoSleep from 'nosleep.js'
 import ChatBubble from './ChatBubble.vue'
 import FriendLocator from './FriendLocator.vue'
 
@@ -50,7 +54,9 @@ export default {
             element: null,
             showingMap: false,
             currentMessage: '',
-            newMessageReceived: false
+            newMessageReceived: false,
+            keepAwake: true,
+            noSleep: null
         }
     },
     components: {
@@ -63,7 +69,10 @@ export default {
         },
         allMessages() {
             return this.messages.map(m => ({ outgoing: m.senderId === this.userId, text: m.text, sender: m.sender }));
-        }
+        },
+    },
+    created() {
+        this.noSleep = new NoSleep();
     },
     updated() {
         if(this.newMessageReceived) {
@@ -105,6 +114,12 @@ export default {
             immediate: true,
             handler: function() {
                 this.newMessageReceived = true;
+            }
+        },
+        keepAwake: {
+            handler: function(enabled) {
+                if(enabled) this.noSleep.enable();
+                else this.noSleep.disable();
             }
         }
     }
