@@ -1,18 +1,14 @@
 <template>
-    <v-card v-if="showingMap">
-        <v-card-text>
-			<friend-locator :connection="connection" :participants="participants" :userId="userId" ></friend-locator>
-        </v-card-text>
-    </v-card>
-    <v-card v-else flat class="d-flex flex-column fill-height">
+    <v-card flat class="d-flex flex-column fill-height">
         <v-card-title>
             {{ otherParticipants.join() }} Your Name: {{ name }}
         </v-card-title>
         <v-card-text class="flex-grow-1 overflow-y-auto" id="container">
             <v-btn @click="leaveRoom">Leave</v-btn>
-            <v-btn @click="toggleMap">Map</v-btn>
+            <v-btn @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}</v-btn>
             <hr>
-            <div v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
+            <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" ></friend-locator>
+            <div v-else v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
                 <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
                     {{ message.text }}
                 </v-chip> -->
