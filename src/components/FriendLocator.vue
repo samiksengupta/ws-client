@@ -1,7 +1,7 @@
 <template>
     <div>
         <div>
-            {{ users[0].latitude }},{{ users[0].longitude }}
+            {{ user.location.latitude }},{{ user.location.longitude }}
         </div>
         <div id="map-div"></div>
     </div>
@@ -20,6 +20,11 @@ export default {
         return {
             markers: {},
             map: null
+        }
+    },
+    computed: {
+        user() {
+            return this.participants.find(p => p.uuid === this.userId);
         }
     },
     mounted() {
@@ -63,7 +68,7 @@ export default {
         },
         updateMarkers() {
             //set marker
-            for(participant of this.participants) {
+            for(const participant of this.participants) {
                 if(participant.uuid in this.markers) {
                     // update location if already created
                     this.markers[participant.uuid].setLngLat([participant.location.longitude, participant.location.latitude]);
@@ -75,8 +80,8 @@ export default {
             }
 
             //clean up markers
-            for(uuid of Object.keys(this.markers)) {
-                if(!this.participant.some(p => p.uuid === uuid)) {
+            for(const uuid of Object.keys(this.markers)) {
+                if(!this.participant.some(p => p.uuid === this.uuid)) {
                     this.markers[uuid].remove();
                     delete this.markers[uuid];
                 }
