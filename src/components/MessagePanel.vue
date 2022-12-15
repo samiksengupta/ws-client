@@ -1,7 +1,7 @@
 <template>
     <v-card v-if="showingMap">
         <v-card-text>
-			<friend-locator></friend-locator>
+			<friend-locator :connection="connection" :participants="participants" :userId="userId" ></friend-locator>
         </v-card-text>
     </v-card>
     <v-card v-else flat class="d-flex flex-column fill-height">

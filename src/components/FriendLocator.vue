@@ -15,15 +15,10 @@
 import tt from '@tomtom-international/web-sdk-maps'
 
 export default {
+    props: ['connection', 'participants', 'userId'],
     data() {
         return {
-            users: [
-                {
-                    latitude: 0,
-                    longitude: 0,
-                    marker: null
-                }
-            ],
+            markers: {},
             map: null
         }
     },
@@ -32,6 +27,9 @@ export default {
             navigator.geolocation.getCurrentPosition(this.initializeMap);
             navigator.geolocation.watchPosition(this.updatePosition);
         }
+    },
+    updated() {
+        this.updateMarkers()
     },
     methods: {
         initializeMap(position) {
@@ -44,16 +42,45 @@ export default {
                 },
                 zoom: 12
             });
-            this.users[0].marker = new tt.Marker().setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this.map);
+            // this.users[0].marker = new tt.Marker().setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this.map);
         },
         updatePosition(position) {
-            this.users[0].latitude = position.coords.latitude;
-            this.users[0].longitude = position.coords.longitude;
-            this.users[0].marker.setLngLat([position.coords.longitude, position.coords.latitude]);
-            this.map.setCenter({
-                lng: position.coords.longitude, 
-                lat: position.coords.latitude
-            })
+            // this.users[0].latitude = position.coords.latitude;
+            // this.users[0].longitude = position.coords.longitude;
+            // this.users[0].marker.setLngLat([position.coords.longitude, position.coords.latitude]);
+            // this.map.setCenter({
+            //     lng: position.coords.longitude, 
+            //     lat: position.coords.latitude
+            // })
+            const clientData = {
+                location: {    
+                    latitude:  position.coords.latitude,
+                    longitude: position.coords.longitude
+                },
+                action: 'MOVING'
+            };
+            this.connection.send(JSON.stringify(clientData));
+        },
+        updateMarkers() {
+            //set marker
+            for(participant of this.participants) {
+                if(participant.uuid in this.markers) {
+                    // update location if already created
+                    this.markers[participant.uuid].setLngLat([participant.location.longitude, participant.location.latitude]);
+                }
+                else {
+                    // create marker
+                    this.markers[participant.uuid] = new tt.Marker().setLngLat([participant.location.longitude, participant.location.latitude]).addTo(this.map);
+                }
+            }
+
+            //clean up markers
+            for(uuid of Object.keys(this.markers)) {
+                if(!this.participant.some(p => p.uuid === uuid)) {
+                    this.markers[uuid].remove();
+                    delete this.markers[uuid];
+                }
+            }
         }
     }
 }
