@@ -19,7 +19,8 @@ export default {
             users: [
                 {
                     latitude: 0,
-                    longitude: 0
+                    longitude: 0,
+                    marker: null
                 }
             ],
             map: null
@@ -27,23 +28,27 @@ export default {
     },
     mounted() {
         if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(this.initializeMap);
             navigator.geolocation.watchPosition(this.updatePosition);
         }
     },
     methods: {
-        updatePosition(position) {
-            this.users[0].latitude = position.coords.latitude;
-            this.users[0].longitude = position.coords.longitude;
-
+        initializeMap(position) {
             this.map = tt.map({
                 key: process.env.VUE_APP_TOMTOM_API_KEY,
                 container: 'map-div',
                 center: {
-                    lng: this.users[0].longitude, 
-                    lat: this.users[0].latitude
+                    lng: position.coords.longitude, 
+                    lat: position.coords.latitude
                 },
                 zoom: 12
             });
+            this.users[0].marker = new tt.Marker().setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this.map);
+        },
+        updatePosition(position) {
+            this.users[0].latitude = position.coords.latitude;
+            this.users[0].longitude = position.coords.longitude;
+            this.users[0].marker.setLngLat([position.coords.longitude, position.coords.latitude]);
         }
     }
 }
