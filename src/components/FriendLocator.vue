@@ -32,6 +32,20 @@ export default {
             navigator.geolocation.getCurrentPosition(this.initializeMap);
             navigator.geolocation.watchPosition(this.updatePosition);
         }
+        else {
+            const dummyLocation = {
+                coords: {
+                    latitude: 22.634834,
+                    longitude: 88.768484
+                }
+            }
+            this.initializeMap(dummyLocation);
+            setInterval(() => {
+                dummyLocation.coords.latitude++;
+                dummyLocation.coords.longitude++;
+                this.updatePosition(dummyLocation);
+            }, 2000);
+        }
     },
     updated() {
         this.updateMarkers()
