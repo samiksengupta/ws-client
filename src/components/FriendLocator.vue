@@ -3,7 +3,7 @@
         <div>
             Your Location: {{ user.location.latitude }},{{ user.location.longitude }}
         </div>
-        <div id="map-div">Could not detect Location data</div>
+        <div id="map-div">Trying to mark your location...</div>
     </div>
 </template>
 <style>
