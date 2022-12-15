@@ -89,7 +89,7 @@
 				this.connection = new WebSocket(`${serverUrl}?name=${this.name}&room=${this.room}`);
 				this.connection.onerror = event => {
 					console.log(`Failed to reach WebSocket server ${serverUrl}`, event);
-					this.connection = null();
+					this.connection = null;
 					this.snackbar.notice = 'Could not connect to server';
 					this.snackbar.display = true;
 				};

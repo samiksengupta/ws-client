@@ -1,9 +1,9 @@
 <template>
     <div>
         <div>
-            {{ user.location.latitude }},{{ user.location.longitude }}
+            Your Location: {{ user.location.latitude }},{{ user.location.longitude }}
         </div>
-        <div id="map-div"></div>
+        <div id="map-div">Could not detect Location data</div>
     </div>
 </template>
 <style>
@@ -24,16 +24,24 @@ export default {
     },
     computed: {
         user() {
-            return this.participants.find(p => p.uuid === this.userId);
+            let user = this.participants.find(p => p.uuid === this.userId);
+            if(!user) {
+                user = {
+                    uuid: '',
+                    name: '---',
+                    location: {
+                        latitude: 0,
+                        longitude: 0
+                    }
+                }
+            }
+            return user;
         }
     },
     mounted() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(this.initializeMap);
-            navigator.geolocation.watchPosition(this.updatePosition);
-        }
-        else {
-            const dummyLocation = {
+        navigator.geolocation.getCurrentPosition(this.initializeMap, err => {
+            console.log(err.message);
+            /* const dummyLocation = {
                 coords: {
                     latitude: 22.634834,
                     longitude: 88.768484
@@ -41,14 +49,15 @@ export default {
             }
             this.initializeMap(dummyLocation);
             setInterval(() => {
-                dummyLocation.coords.latitude++;
-                dummyLocation.coords.longitude++;
+                dummyLocation.coords.latitude += 0.000001;
+                dummyLocation.coords.longitude += 0.000001;
                 this.updatePosition(dummyLocation);
-            }, 2000);
-        }
+            }, 2000); */
+        });
+        navigator.geolocation.watchPosition(this.updatePosition);
     },
     updated() {
-        this.updateMarkers()
+        this.updateMarkers();
     },
     methods: {
         initializeMap(position) {
@@ -95,7 +104,8 @@ export default {
 
             //clean up markers
             for(const uuid of Object.keys(this.markers)) {
-                if(!this.participant.some(p => p.uuid === this.uuid)) {
+                const userExists = this.participants.some(p => p.uuid === uuid);
+                if(!userExists) {
                     this.markers[uuid].remove();
                     delete this.markers[uuid];
                 }
