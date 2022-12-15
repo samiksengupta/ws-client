@@ -25,7 +25,7 @@ export default {
             map: null
         }
     },
-    created() {
+    mounted() {
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(this.updatePosition);
             this.map = tt.map({
