@@ -30,7 +30,7 @@ export default {
             navigator.geolocation.watchPosition(this.updatePosition);
             this.map = tt.map({
                 key: process.env.VUE_APP_TOMTOM_API_KEY,
-                container: 'map-div',
+                container: '#map-div',
                 center: {
                     lng: this.users[0].longitude, 
                     lat: this.users[0].latitude
