@@ -7,8 +7,9 @@
     </div>
 </template>
 <style>
-  body, html { margin: 0; padding: 0; }
-  #map-div { width: 100vw; height: 100vh; }
+    @import 'https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.21.3/maps/maps.css';
+    body, html { margin: 0; padding: 0; }
+    #map-div { width: 100vw; height: 100vh; }
 </style>
 <script>
 import tt from '@tomtom-international/web-sdk-maps'
