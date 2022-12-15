@@ -1,12 +1,24 @@
 <template>
     <v-card flat class="d-flex flex-column fill-height">
         <v-card-title>
-            {{ otherParticipants.join() }} Your Name: {{ name }}
+            <v-row>
+                <v-col>
+                    Others: <b>{{ otherParticipants.length ? otherParticipants.join() : 'Nobody else. You are all alone.' }}</b>
+                </v-col>
+                <v-col class="text-right">
+                    You: <b>{{ name }}</b>
+                </v-col>
+            </v-row>
         </v-card-title>
         <v-card-text class="flex-grow-1 overflow-y-auto" id="container">
-            <v-btn @click="leaveRoom">Leave</v-btn>
-            <v-btn @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}</v-btn>
-            <hr>
+            <v-row>
+                <v-col>
+                    <v-btn color="error" @click="leaveRoom">Leave</v-btn>
+                </v-col>
+                <v-col class="text-right">    
+                    <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}</v-btn>
+                </v-col>
+            </v-row>
             <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" ></friend-locator>
             <div v-else v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
                 <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
@@ -47,7 +59,7 @@ export default {
     },
     computed: {
         otherParticipants() {
-           return this.participants.filter(p => p.id !== this.userId).map(p => p.name);
+           return this.participants.filter(p => p.uuid !== this.userId).map(p => p.name);
         },
         allMessages() {
             return this.messages.map(m => ({ outgoing: m.senderId === this.userId, text: m.text, sender: m.sender }));
