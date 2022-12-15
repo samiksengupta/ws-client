@@ -55,7 +55,6 @@
 
 <script>
 	import MessagePanel from './components/MessagePanel.vue'
-	// import JoinRoom from './components/JoinRoom.vue'
 	export default {
 		name: 'App',
 		data() {
@@ -75,7 +74,6 @@
 		},
 		components: {
 			MessagePanel
-			// JoinRoom
 		},
 		computed: {
 			userName() {
@@ -88,10 +86,12 @@
 			},
 			join() {
 				const serverUrl = process.env.VUE_APP_CHAT_SERVER_URL;
-				// const serverUrl = 'ws://ws-server-production.up.railway.app:443';
 				this.connection = new WebSocket(`${serverUrl}?name=${this.name}&room=${this.room}`);
 				this.connection.onerror = event => {
 					console.log(`Failed to reach WebSocket server ${serverUrl}`, event);
+					this.connection = null();
+					this.snackbar.notice = 'Could not connect to server';
+					this.snackbar.display = true;
 				};
 				this.connection.onmessage = event => {
 					const data = JSON.parse(event.data);

@@ -1,10 +1,16 @@
 <template>
-    <v-card flat class="d-flex flex-column fill-height">
+    <v-card v-if="showingMap">
+        <v-card-text>
+			<friend-locator></friend-locator>
+        </v-card-text>
+    </v-card>
+    <v-card v-else flat class="d-flex flex-column fill-height">
         <v-card-title>
             {{ otherParticipants.join() }} Your Name: {{ name }}
         </v-card-title>
         <v-card-text class="flex-grow-1 overflow-y-auto" id="container">
             <v-btn @click="leaveRoom">Leave</v-btn>
+            <v-btn @click="toggleMap">Map</v-btn>
             <hr>
             <div v-for="(message, index) in allMessages" :key="index" :class="{ 'd-flex flex-row-reverse': message.outgoing }">
                 <!-- <v-chip :dark="!message.outgoing" class="pa-4 mb-2 chat-bubble">
@@ -26,16 +32,19 @@
 </style>
 <script>
 import ChatBubble from './ChatBubble.vue'
+import FriendLocator from './FriendLocator.vue'
 
 export default {
     props: ['connection', 'userId', 'participants', 'messages', 'name'],
     data() {
         return {
-            currentMessage: ''
+            currentMessage: '',
+            showingMap: false
         }
     },
     components: {
-        ChatBubble
+        ChatBubble,
+		FriendLocator
     },
     updated() {
         this.scrollToLastMessage();
@@ -67,9 +76,14 @@ export default {
             };
             this.connection.send(JSON.stringify(clientData));
         },
+        toggleMap() {
+            this.showingMap = !this.showingMap;
+        },
         scrollToLastMessage() {
-            const el = this.$el.querySelector('#container').lastElementChild;
-            if(el) el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "center", alignToTop: false });
+            if(!this.showingMap) {
+                const el = this.$el.querySelector('#container').lastElementChild;
+                if(el) el.scrollIntoView({behavior: "smooth", block: "nearest", inline: "center", alignToTop: false });
+            }
         }
     }
 }
