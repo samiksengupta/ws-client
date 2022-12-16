@@ -117,6 +117,9 @@ export default {
             if(this.connection.readyState === WebSocket.OPEN) this.connection.send(JSON.stringify(clientData));
         },
         updateMarkers() {
+
+            if(!this.map) return;
+
             let usersWithLocation = 0;
             const bounds = new tt.LngLatBounds();
 
