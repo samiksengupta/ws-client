@@ -22,18 +22,10 @@ export default {
             mapAutoFit: true,
             mapAutoFitSuspensionTimeout: 10000,
             routing: {
+                routes: [],
                 enabled: false,
-                from: {
-                    latitude: 0,
-                    longitude: 0,
-                },
-                to: {
-                    latitude: 0,
-                    longitude: 0
-                },
                 weight: 3,
                 backgroundWeight: 4,
-                routes: [],
                 updateDelay: 5000
             },
             locationFetchMessage: 'Trying to mark your location...'
@@ -119,15 +111,11 @@ export default {
                 },
                 action: 'MOVING'
             };
-            console.log(this.connection);
             if(this.connection.readyState === WebSocket.OPEN) this.connection.send(JSON.stringify(clientData));
         },
         updateMarkers() {
-            
             let usersWithLocation = 0;
             const bounds = new tt.LngLatBounds();
-
-            this.routing.routes = [];
 
             //clean up markers of dropped off users
             for(const uuid of Object.keys(this.markers)) {
@@ -171,19 +159,6 @@ export default {
                     this.markers[participant.uuid].showPopup = true;
                     this.markers[participant.uuid].hasSummary = false;
                 }
-
-                // prime user coordinates for future routing
-                if(this.routing.enabled) {
-
-                    if(participant.uuid === this.userId) {
-                        this.routing.from.latitude = participant.location.latitude;
-                        this.routing.from.longitude = participant.location.longitude;
-                    }
-                    else {
-                        this.routing.to.latitude = participant.location.latitude;
-                        this.routing.to.longitude = participant.location.longitude;
-                    }
-                }
             }
 
             if(usersWithLocation > 1) {
@@ -217,17 +192,13 @@ export default {
                             results.batchItems.forEach((singleRoute, index) => {
                                 if(singleRoute.error) return;
                                 const routeGeoJson = singleRoute.toGeoJson();
-                                const route = [];
                                 const routeBackgroundLayerId = `route_background_${index}`;
                                 const routeLayerId = `route_${index}`;
 
                                 if(!this.map.getLayer(routeBackgroundLayerId) && !this.map.getLayer(routeLayerId)) {
                                     this.map.addLayer(this.buildStyle(routeBackgroundLayerId, routeGeoJson, 'black', this.routing.backgroundWeight)).addLayer(this.buildStyle(routeLayerId, routeGeoJson, 'red', this.routing.weight));
+                                    this.routing.routes[index] = [routeBackgroundLayerId, routeLayerId];
                                 }
-
-                                route[0] = routeBackgroundLayerId;
-                                route[1] = routeLayerId;
-                                this.routing.routes[index] = route;
 
                                 const marker = this.markers[batchItems[index].uuid];
 
@@ -245,11 +216,12 @@ export default {
             }
             else {
                 //clean up routes
-                this.routing.routes.forEach(child => {
+                this.routing.routes.forEach((child, index) => {
                     this.map.removeLayer(child[0]);
                     this.map.removeLayer(child[1]);
                     this.map.removeSource(child[0]);
                     this.map.removeSource(child[1]);
+                    this.routing.routes.splice(index, 1);
                 });
 
                 for(const uuid of Object.keys(this.markers)) {
@@ -314,6 +286,12 @@ export default {
             handler(value) {
                 this.routing.enabled = value;
                 this.handleRouting();
+            }
+        },
+        'routing.routes.length': {
+            handler(value) {
+                console.log("ROUTING.ROUTES CHANGED", value);
+                if(value > 0) console.log("ROUTING.ROUTES FILLED");
             }
         }
     }

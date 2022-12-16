@@ -80,6 +80,9 @@
 				return this.name.trim() ? this.name : 'Anonymous';
 			}
 		},
+		updated() {
+			this.checkConnectionState();
+		},
 		methods: {
 			addMessage(message) {
 				this.messages.push(message);
@@ -110,12 +113,15 @@
 						this.snackbar.display = true;
 					}
 				}
+			},
+			checkConnectionState() {
+				if(!this.connection || this.connection.readyState === WebSocket.CLOSED) this.connection = null;
 			}
 		},
 		watch: {
 			connection: {
-				handler(value) {
-					if(value.readyState === WebSocket.CLOSED) this.connection = null;
+				handler() {
+					this.checkConnectionState();
 				}
 			}
 		}

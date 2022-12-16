@@ -11,7 +11,7 @@
             </v-row>
         </v-card-title>
         <v-card-title>
-             <v-row>
+             <v-row align="center" justify="center">
                 <v-col>
                     <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
@@ -90,14 +90,15 @@ export default {
                 },
                 action: 'MESSAGING'
             };
-            this.connection.send(JSON.stringify(clientData));
+            if(this.connection.readyState === WebSocket.OPEN) this.connection.send(JSON.stringify(clientData));
             this.currentMessage = '';
         },
         leaveRoom() {
             const clientData = {
                 action: 'DISCONNECTING'
             };
-            this.connection.send(JSON.stringify(clientData));
+            if(this.connection.readyState === WebSocket.OPEN) this.connection.send(JSON.stringify(clientData));
+            this.connection.close();
         },
         toggleMap() {
             this.showingMap = !this.showingMap;
