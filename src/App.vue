@@ -112,6 +112,9 @@
 						this.snackbar.notice = data.notice;
 						this.snackbar.display = true;
 					}
+				};
+				this.connection.onclose = () => {
+					this.connection = null;
 				}
 			},
 			checkConnectionState() {
