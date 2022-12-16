@@ -155,10 +155,10 @@ export default {
                 }
                 else {
                     // create marker
-                    this.markers[participant.uuid] = new tt.Marker().setLngLat([participant.location.longitude, participant.location.latitude]).addTo(this.map);
-                    // this.markers[participant.uuid].setPopup(new tt.Popup({ offset: {bottom: [0, -40]}, closeButton: false, closeOnClick: true, closeOnMove: false }).setHTML(`<em>${participant.name}</em>`)).togglePopup();
+                    this.markers[participant.uuid] = new tt.Marker().setLngLat([participant.location.longitude, participant.location.latitude]);
                     this.markers[participant.uuid].showPopup = true;
                     this.markers[participant.uuid].hasSummary = false;
+                    this.markers[participant.uuid].addTo(this.map);
                 }
             }
 
