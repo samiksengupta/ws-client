@@ -115,7 +115,7 @@
 		watch: {
 			connection: {
 				handler(value) {
-					if(value.readyState !== WebSocket.OPEN) this.connection = null;
+					if(value.readyState === WebSocket.CLOSED) this.connection = null;
 				}
 			}
 		}
