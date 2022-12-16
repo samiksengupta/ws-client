@@ -9,14 +9,31 @@
     #map-div { width: 100%; height: 100%; }
 </style>
 <script>
-import tt from '@tomtom-international/web-sdk-maps'
+// import tt from '@tomtom-international/web-sdk-maps'
+import { default as ttServices } from '@tomtom-international/web-sdk-services';
+import { default as tt } from '@tomtom-international/web-sdk-maps';
 
 export default {
-    props: ['connection', 'participants', 'userId', 'messages'],
+    props: ['connection', 'participants', 'userId', 'messages', 'showRouting'],
     data() {
         return {
             markers: {},
             map: null,
+            routing: {
+                enabled: false,
+                from: {
+                    latitude: 0,
+                    longitude: 0,
+                },
+                to: {
+                    latitude: 0,
+                    longitude: 0
+                },
+                weight: 3,
+                backgroundWeight: 4,
+                routes: [],
+                updateDelay: 5000
+            },
             locationFetchMessage: 'Trying to mark your location...'
         }
     },
@@ -89,8 +106,30 @@ export default {
             this.connection.send(JSON.stringify(clientData));
         },
         updateMarkers() {
-            //set marker
+
+            // this.routing.enabled = this.participants.length > 1;
+            
+            const bounds = new tt.LngLatBounds();
+
+            this.routing.routes = [];
+
+            //clean up markers of dropped off users
+            for(const uuid of Object.keys(this.markers)) {
+                const userExists = this.participants.some(p => p.uuid === uuid);
+                if(!userExists) {
+                    this.markers[uuid].remove();
+                    delete this.markers[uuid];
+                }
+            }
+            
             for(const participant of this.participants) {
+
+                if(participant.location.latitude === 0 && participant.location.longitude === 0) continue;
+
+                // set bounds
+                bounds.extend(tt.LngLat.convert([participant.location.longitude, participant.location.latitude]));
+
+                //set or update marker
                 if(participant.uuid in this.markers) {
                     // update location if already created
                     this.markers[participant.uuid].setLngLat([participant.location.longitude, participant.location.latitude]);
@@ -105,14 +144,93 @@ export default {
                     this.markers[participant.uuid].setPopup(new tt.Popup({ offset: {bottom: [0, -40]}, closeButton: false, closeOnClick: true, closeOnMove: false }).setHTML(`<em>${participant.name}</em>`)).togglePopup();
                     this.markers[participant.uuid].showPopup = false;
                 }
+
+                // prime user coordinates for future routing
+                if(this.routing.enabled) {
+
+                    if(participant.uuid === this.userId) {
+                        this.routing.from.latitude = participant.location.latitude;
+                        this.routing.from.longitude = participant.location.longitude;
+                    }
+                    else {
+                        this.routing.to.latitude = participant.location.latitude;
+                        this.routing.to.longitude = participant.location.longitude;
+                    }
+                }
+                else {
+                    // do nothing
+                }
             }
 
-            //clean up markers
-            for(const uuid of Object.keys(this.markers)) {
-                const userExists = this.participants.some(p => p.uuid === uuid);
-                if(!userExists) {
-                    this.markers[uuid].remove();
-                    delete this.markers[uuid];
+            // show all locations on map or just center on user
+            this.map.fitBounds(bounds, { padding: 150 });
+
+            this.handleRouting();
+        },
+        handleRouting() {
+            if(this.routing.enabled) {
+                
+                /* tt.routing({ traffic: false }).locations(`${this.routing.from.longitude},${this.routing.from.latitude}:${this.routing.to.longitude},${this.routing.to.latitude}`).go().then(routeJson => {
+                    const route = tt.L.geoJson(routeJson, {
+                        style: { color: '#0000ff', opacity: 0.6 }
+                    }).addTo(this.map);
+                    this.map.fitBounds(route.getBounds(), { padding: [10, 10] });
+                }); */
+                // console.log(ttServices);
+
+                ttServices.services.calculateRoute({
+                    batchMode: 'sync',
+                    key: process.env.VUE_APP_TOMTOM_API_KEY,
+                    batchItems: [
+                        { locations: `${this.routing.from.longitude},${this.routing.from.latitude}:${this.routing.to.longitude},${this.routing.to.latitude}` }
+                    ]
+                }).then(results => {
+                    if(this.routing.enabled) {
+                        results.batchItems.forEach((singleRoute, index) => {
+                            if(singleRoute.error) return;
+                            const routeGeoJson = singleRoute.toGeoJson();
+                            const route = [];
+                            const routeBackgroundLayerId = `route_background_${index}`;
+                            const routeLayerId = `route_${index}`;
+
+                            if(!this.map.getLayer(routeBackgroundLayerId) && !this.map.getLayer(routeLayerId)) {
+                                this.map.addLayer(this.buildStyle(routeBackgroundLayerId, routeGeoJson, 'black', this.routing.backgroundWeight)).addLayer(this.buildStyle(routeLayerId, routeGeoJson, 'red', this.routing.weight));
+                            }
+
+                            route[0] = routeBackgroundLayerId;
+                            route[1] = routeLayerId;
+                            this.routing.routes[index] = route;
+                        });
+                    }
+                });
+            }
+            else {
+                if(this.routing.routes.length) {
+                    //clean up routes
+                    this.routing.routes.forEach(child => {
+                        this.map.removeLayer(child[0]);
+                        this.map.removeLayer(child[1]);
+                        this.map.removeSource(child[0]);
+                        this.map.removeSource(child[1]);
+                    });
+                }
+            }
+        },
+        buildStyle(id, data, color, width) {
+            return {
+                'id': id,
+                'type': 'line',
+                'source': {
+                    'type': 'geojson',
+                    'data': data
+                },
+                'paint': {
+                    'line-color': color,
+                    'line-width': width
+                },
+                'layout': {
+                    'line-cap': 'round',
+                    'line-join': 'round'
                 }
             }
         }
@@ -132,6 +250,12 @@ export default {
         participants: {
             handler() {
                 this.updateMarkers();
+            }
+        },
+        showRouting: {
+            handler(value) {
+                this.routing.enabled = value;
+                this.handleRouting();
             }
         }
     }

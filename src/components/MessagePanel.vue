@@ -15,13 +15,16 @@
                 <v-col>
                     <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
-                <v-col class="text-right">    
+                <v-col class="text-center">
+                    <v-switch v-show="showingMap" v-model="showRouting" label="Routing"></v-switch>
+                </v-col>
+                <v-col class="text-right">
                     <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}&nbsp;<v-icon>{{ showingMap ? 'mdi-comment-multiple-outline' : 'mdi-map' }}</v-icon></v-btn>
                 </v-col>
             </v-row>
         </v-card-title>
         <v-card-text class="flex-grow-1 overflow-y-auto">
-            <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" :messages="messages" ></friend-locator>
+            <friend-locator v-if="showingMap" :connection="connection" :participants="participants" :userId="userId" :messages="messages" :showRouting="showRouting" ></friend-locator>
             <div v-else id="container">
                 <v-row v-for="(message, index) in allMessages" :key="index">
                     <v-col :class="{ 'd-flex flex-row-reverse': message.outgoing }">
@@ -52,7 +55,8 @@ export default {
             element: null,
             showingMap: false,
             currentMessage: '',
-            newMessageReceived: false
+            newMessageReceived: false,
+            showRouting: false
         }
     },
     components: {
