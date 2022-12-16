@@ -74,6 +74,7 @@ export default {
             }, 5000); */
         });
         navigator.geolocation.watchPosition(this.updatePosition);
+        console.log("MOUNTED FL");
     },
     updated() {
     },
@@ -103,6 +104,7 @@ export default {
                     this.mapAutoFit = true;
                 }, this.mapAutoFitSuspensionTimeout);
             });
+            console.log("INITIALIZED MAP", this.map);
         },
         updatePosition(position) {
             const clientData = {
