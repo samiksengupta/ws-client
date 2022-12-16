@@ -60,7 +60,7 @@ export default {
                 case err.TIMEOUT: this.locationFetchMessage = 'Took a long time trying to get your spot. I gave up!'; break;
             }
             
-            const dummyLocation = {
+            /* const dummyLocation = {
                 coords: {
                     latitude: 22.634834,
                     longitude: 88.768484
@@ -71,7 +71,7 @@ export default {
                 dummyLocation.coords.latitude += 0.000001;
                 dummyLocation.coords.longitude += 0.000001;
                 this.updatePosition(dummyLocation);
-            }, 5000);
+            }, 5000); */
         });
         navigator.geolocation.watchPosition(this.updatePosition);
     },
