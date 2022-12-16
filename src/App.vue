@@ -111,6 +111,13 @@
 					}
 				}
 			}
+		},
+		watch: {
+			connection: {
+				handler(value) {
+					if(value.readyState !== WebSocket.OPEN) this.connection = null;
+				}
+			}
 		}
 	};
 </script>

@@ -119,7 +119,8 @@ export default {
                 },
                 action: 'MOVING'
             };
-            this.connection.send(JSON.stringify(clientData));
+            console.log(this.connection);
+            if(this.connection.readyState === WebSocket.OPEN) this.connection.send(JSON.stringify(clientData));
         },
         updateMarkers() {
             
