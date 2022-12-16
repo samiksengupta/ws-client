@@ -21,6 +21,7 @@ export default {
             map: null,
             mapAutoFit: true,
             mapAutoFitSuspensionTimeout: 10000,
+            mapStartingZoom: 12,
             routing: {
                 routes: [],
                 enabled: false,
@@ -88,7 +89,7 @@ export default {
                     lng: position.coords.longitude, 
                     lat: position.coords.latitude
                 },
-                zoom: 12
+                zoom: this.mapStartingZoom
             });
             this.map.on('drag', () => {
                 this.mapAutoFit = false;
@@ -164,6 +165,15 @@ export default {
             if(usersWithLocation > 1) {
                 // show all markers on map
                 if(this.mapAutoFit) this.map.fitBounds(bounds, { padding: 100} );
+            }
+            else {
+                // nicely centers the user if they are the only ones left
+                if(this.user.location.longitude !== 0 && this.user.location.latitude !== 0) {
+                    this.map.easeTo({
+                        center: tt.LngLat.convert([this.user.location.longitude, this.user.location.latitude]),
+                        zoom: this.mapStartingZoom
+                    });
+                }
             }
 
             this.handleRouting();
