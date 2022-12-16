@@ -115,6 +115,13 @@ export default {
             handler: function() {
                 this.newMessageReceived = true;
             }
+        },
+        participants: {
+            handler: function(value) {
+                if(value.length < 2) {
+                    this.showRouting = false;
+                }
+            }
         }
     }
 }
