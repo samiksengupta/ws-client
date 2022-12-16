@@ -3,7 +3,7 @@
         <v-card-title>
             <v-row>
                 <v-col>
-                    Others: <b>{{ otherParticipants.length ? otherParticipants.join() : 'Nobody else. You are all alone.' }}</b>
+                    Others: <b>{{ otherParticipants.length ? otherParticipants.join() : 'None' }}</b>
                 </v-col>
                 <v-col class="text-right">
                     You: <b>{{ name }}</b>
@@ -15,8 +15,8 @@
                 <v-col>
                     <v-btn color="error" @click="leaveRoom"><v-icon>mdi-arrow-left</v-icon>&nbsp;Leave</v-btn>
                 </v-col>
-                <v-col class="text-center">
-                    <v-switch v-show="showingMap" v-model="showRouting" label="Routing"></v-switch>
+                <v-col v-if="canToggleRouting" class="text-center">
+                    <v-switch v-model="showRouting" label="Routing"></v-switch>
                 </v-col>
                 <v-col class="text-right">
                     <v-btn color="primary" @click="toggleMap">{{ showingMap ? 'Chat' : 'Map' }}&nbsp;<v-icon>{{ showingMap ? 'mdi-comment-multiple-outline' : 'mdi-map' }}</v-icon></v-btn>
@@ -70,6 +70,9 @@ export default {
         allMessages() {
             return this.messages.map(m => ({ outgoing: m.senderId === this.userId, text: m.text, sender: m.sender }));
         },
+        canToggleRouting() {
+            return this.participants.length > 1 && this.showingMap;
+        }
     },
     updated() {
         if(this.newMessageReceived) {
